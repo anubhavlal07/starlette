@@ -281,6 +281,7 @@ class Request(HTTPConnection[StateT]):
             content_type_header = self.headers.get("Content-Type")
             content_type: bytes
             content_type, _ = parse_options_header(content_type_header)
+            content_type = content_type.strip().lower()
             if content_type == b"multipart/form-data":
                 try:
                     async with aclosing(self.stream()) as stream:

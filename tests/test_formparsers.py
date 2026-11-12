@@ -637,6 +637,24 @@ def test_multipart_request_decodes_charset(
     assert response.json() == {"value": expected}
 
 
+@pytest.mark.parametrize(
+    "content_type,content",
+    [
+        (
+            "Multipart/Form-Data; boundary=boundary",
+            b'--boundary\r\nContent-Disposition: form-data; name="some"\r\n\r\ndata\r\n--boundary--\r\n',
+        ),
+        ("Application/X-WWW-Form-Urlencoded; charset=utf-8", b"some=data"),
+    ],
+)
+def test_form_content_type_is_case_insensitive(
+    content_type: str, content: bytes, test_client_factory: TestClientFactory
+) -> None:
+    client = test_client_factory(app)
+    response = client.post("/", content=content, headers={"Content-Type": content_type})
+    assert response.json() == {"some": "data"}
+
+
 def test_multipart_request_resolves_charset_once(test_client_factory: TestClientFactory) -> None:
     charset = "starlette-test-invalid-charset"
     codec_searches: list[str] = []
